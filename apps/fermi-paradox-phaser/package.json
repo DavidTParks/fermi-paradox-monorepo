@@ -2,7 +2,6 @@
     "name": "fermi-paradox-phaser",
     "private": true,
     "version": "0.0.0",
-    "type": "module",
     "scripts": {
         "dev": "vite",
         "build": "tsc && vite build",
@@ -23,12 +22,15 @@
         "react-dom": "^18.2.0",
         "rollup-plugin-polyfill-node": "^0.11.0",
         "stream-browserify": "^3.0.0",
-        "util": "^0.12.5"
+        "util": "^0.12.5",
+        "zustand": "^4.3.3"
     },
     "devDependencies": {
         "@types/react": "^18.0.27",
         "@types/react-dom": "^18.0.10",
         "@vitejs/plugin-react-swc": "^3.0.0",
+        "config": "*",
+        "tsconfig": "*",
         "typescript": "^4.9.3",
         "vite": "^4.1.0"
     }
