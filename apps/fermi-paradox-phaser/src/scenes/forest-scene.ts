@@ -127,25 +127,23 @@ export class ForestScene extends Phaser.Scene {
         map.setCollisionByProperty({ collides: true })
 
         const debugGraphics = this.add.graphics().setAlpha(0.75)
-        map.renderDebug(debugGraphics, {
-            tileColor: null, // Color of non-colliding tiles
-            collidingTileColor: new Phaser.Display.Color(243, 134, 48, 255), // Color of colliding tiles
-            faceColor: new Phaser.Display.Color(40, 39, 37, 255), // Color of colliding face edges
-        })
+        // map.renderDebug(debugGraphics, {
+        //     tileColor: null, // Color of non-colliding tiles
+        //     collidingTileColor: new Phaser.Display.Color(243, 134, 48, 255), // Color of colliding tiles
+        //     faceColor: new Phaser.Display.Color(40, 39, 37, 255), // Color of colliding face edges
+        // })
 
         this.player = this.physics.add
-            .sprite(128, 128, "player")
+            .sprite(300, 445, "player")
             .setOrigin(0, 0)
         this.physics.add.collider(this.player, underground)
         this.physics.add.collider(this.player, grass)
         this.player.body.setSize(16, 30)
         this.player.body.setOffset(16, 20)
         this.player.setScale(2)
-        this.add.text(50, 10, "Right size: single sprite/frame shown")
 
-        this.cameras.main.setSize(window.innerWidth, window.innerHeight)
+        this.cameras.main.setFollowOffset(0, 0)
         this.cameras.main.startFollow(this.player, true)
-        this.cameras.main.setFollowOffset(0, 145)
 
         this.anims.create({
             key: "right",
