@@ -13,6 +13,7 @@ export class ForestScene extends Phaser.Scene {
     private player!: Phaser.Physics.Arcade.Sprite
     private cursors!: Phaser.Types.Input.Keyboard.CursorKeys
     private wasd!: WASD
+    private spacebar!: Phaser.Input.Keyboard.Key
 
     private backgrounds: {
         ratioX: number
@@ -29,6 +30,9 @@ export class ForestScene extends Phaser.Scene {
             left: Phaser.Input.Keyboard.KeyCodes.A,
             right: Phaser.Input.Keyboard.KeyCodes.D,
         })
+        this.spacebar = this.input.keyboard.addKey(
+            Phaser.Input.Keyboard.KeyCodes.SPACE
+        )
     }
 
     constructor() {
@@ -51,10 +55,14 @@ export class ForestScene extends Phaser.Scene {
             "assets/maps/fermi-paradox-level-1/level-2.json"
         )
 
-        this.load.spritesheet("player", "assets/gunslinger.png", {
-            frameWidth: 48,
-            frameHeight: 48,
-        })
+        this.load.spritesheet(
+            "player",
+            "assets/sprites/gunslinger/gunslinger.png",
+            {
+                frameWidth: 48,
+                frameHeight: 48,
+            }
+        )
     }
 
     create() {
@@ -126,27 +134,27 @@ export class ForestScene extends Phaser.Scene {
         const accents = map.createLayer("accents", tileset)
         accents.setScale(2)
         const grass = map.createLayer("grass", tileset)
-        grass.setScale(2).setDepth(3)
+        grass.setScale(2)
 
         map.setCollisionByProperty({ collides: true })
 
         const debugGraphics = this.add.graphics().setAlpha(0.75)
-        // map.renderDebug(debugGraphics, {
-        //     tileColor: null, // Color of non-colliding tiles
-        //     collidingTileColor: new Phaser.Display.Color(243, 134, 48, 255), // Color of colliding tiles
-        //     faceColor: new Phaser.Display.Color(40, 39, 37, 255), // Color of colliding face edges
-        // })
+        map.renderDebug(debugGraphics, {
+            tileColor: null, // Color of non-colliding tiles
+            collidingTileColor: new Phaser.Display.Color(243, 134, 48, 255), // Color of colliding tiles
+            faceColor: new Phaser.Display.Color(40, 39, 37, 255), // Color of colliding face edges
+        })
 
         this.player = this.physics.add
             .sprite(300, 380, "player")
             .setOrigin(0, 0)
-        this.physics.add.collider(this.player, underground)
+        // this.physics.add.collider(this.player, underground)
         this.physics.add.collider(this.player, grass)
         this.player.body.setSize(16, 30)
         this.player.body.setOffset(16, 20)
         this.player.setScale(2)
 
-        this.cameras.main.startFollow(this.player, true)
+        this.cameras.main.startFollow(this.player, true, 1, 1)
 
         this.anims.create({
             key: "right",
@@ -182,12 +190,10 @@ export class ForestScene extends Phaser.Scene {
     }
 
     update() {
-        this.player.setVelocity(0)
+        console.log(this.player.body.touching.down)
         // Up, down, left, right
         const goingRight = this.wasd.right.isDown || this.cursors.right.isDown
         const goingLeft = this.wasd.left.isDown || this.cursors.left.isDown
-        const goingUp = this.wasd.up.isDown || this.cursors.up.isDown
-        const goingDown = this.wasd.down.isDown || this.cursors.down.isDown
 
         // Combination directions
 
@@ -199,16 +205,13 @@ export class ForestScene extends Phaser.Scene {
             this.player.flipX = true
             this.player.setVelocityX(-160)
             this.player.anims.play("left", true)
-        }
-
-        if (goingDown) {
-            this.player.setVelocityY(160)
-        } else if (goingUp) {
-            this.player.setVelocityY(-160)
-        }
-
-        if (!goingRight && !goingLeft && !goingDown && !goingUp) {
+        } else {
+            this.player.setVelocityX(0)
             this.player.anims.play("idle", true)
+        }
+
+        if (this.spacebar.isDown) {
+            this.player.setVelocityY(-160)
         }
 
         // if (this.cursors.left.isDown) {
