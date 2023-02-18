@@ -60,19 +60,19 @@ export class ForestScene extends Phaser.Scene {
     create() {
         console.log("FirstGameScene.create")
 
-        const { width, height } = this.scale
+        const { width } = this.scale
 
-        console.log(width)
-        console.log(height)
+        const height = 384
 
         const map = this.make.tilemap({ key: "tilemap" })
 
         this.backgrounds.push({
-            ratioX: 0.01,
+            ratioX: 0,
             sprite: this.add
                 .tileSprite(0, 0, width, height, "bg")
                 .setOrigin(0, 0)
-                .setScrollFactor(0, 0),
+                .setScrollFactor(0, 0)
+                .setPosition(0, 300),
         })
 
         // this.add.image(0, 0, 'middle').setOrigin(0, 0)
@@ -81,7 +81,8 @@ export class ForestScene extends Phaser.Scene {
             sprite: this.add
                 .tileSprite(0, 0, width, height, "bg1")
                 .setOrigin(0, 0)
-                .setScrollFactor(0, 0),
+                .setScrollFactor(0, 0)
+                .setPosition(0, 200),
         })
 
         // this.add.image(0, 0, 'foreground').setOrigin(0, 0)
@@ -90,7 +91,8 @@ export class ForestScene extends Phaser.Scene {
             sprite: this.add
                 .tileSprite(0, 0, width, height, "bg2")
                 .setOrigin(0, 0)
-                .setScrollFactor(0, 0),
+                .setScrollFactor(0, 0)
+                .setPosition(0, 200),
         })
 
         // this.add.image(0, 0, 'ground1').setOrigin(0, 0)
@@ -99,7 +101,8 @@ export class ForestScene extends Phaser.Scene {
             sprite: this.add
                 .tileSprite(0, 0, width, height, "bg3")
                 .setOrigin(0, 0)
-                .setScrollFactor(0, 0),
+                .setScrollFactor(0, 0)
+                .setPosition(0, 200),
         })
 
         this.backgrounds.push({
@@ -107,7 +110,8 @@ export class ForestScene extends Phaser.Scene {
             sprite: this.add
                 .tileSprite(0, 0, width, height, "bg4")
                 .setOrigin(0, 0)
-                .setScrollFactor(0, 0),
+                .setScrollFactor(0, 0)
+                .setPosition(0, 200),
         })
 
         // add the tileset image we are using
@@ -229,6 +233,7 @@ export class ForestScene extends Phaser.Scene {
             const bg = this.backgrounds[i]
 
             bg.sprite.tilePositionX = this.cameras.main.scrollX * bg.ratioX
+            bg.sprite.setPosition(0, -this.cameras.main.scrollY + 160)
         }
     }
 }

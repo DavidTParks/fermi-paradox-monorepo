@@ -22,5 +22,5 @@ export const config: Phaser.Types.Core.GameConfig = {
             debug: true,
         },
     },
-    backgroundColor: "#fff",
+    backgroundColor: "#bddfda",
 }
