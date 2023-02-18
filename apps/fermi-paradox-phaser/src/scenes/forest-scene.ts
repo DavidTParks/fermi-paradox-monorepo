@@ -72,6 +72,7 @@ export class ForestScene extends Phaser.Scene {
                 .tileSprite(0, 0, width, height, "bg")
                 .setOrigin(0, 0)
                 .setScrollFactor(0, 0)
+                .setScale(0, 1.5)
                 .setPosition(0, 300),
         })
 
@@ -104,6 +105,8 @@ export class ForestScene extends Phaser.Scene {
                 .setScrollFactor(0, 0)
                 .setPosition(0, 200),
         })
+
+        this.physics.world.fixedStep = false
 
         this.backgrounds.push({
             ratioX: 0.8,
@@ -146,7 +149,6 @@ export class ForestScene extends Phaser.Scene {
         this.player.body.setOffset(16, 20)
         this.player.setScale(2)
 
-        this.cameras.main.setFollowOffset(0, 0)
         this.cameras.main.startFollow(this.player, true)
 
         this.anims.create({

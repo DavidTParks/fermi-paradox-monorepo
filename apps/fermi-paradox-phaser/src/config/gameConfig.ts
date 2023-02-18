@@ -1,8 +1,5 @@
 import Phaser from "phaser"
-import { calculateGameSize } from "../utils/utils"
-import { FirstGameScene } from "../scenes/first-scene"
 import { ForestScene } from "../scenes/forest-scene"
-const { width, height } = calculateGameSize()
 
 export const config: Phaser.Types.Core.GameConfig = {
     type: Phaser.AUTO,
@@ -12,12 +9,13 @@ export const config: Phaser.Types.Core.GameConfig = {
     scene: [ForestScene],
     scale: {
         mode: Phaser.Scale.ScaleModes.RESIZE,
+        autoCenter: Phaser.Scale.CENTER_BOTH,
     },
     physics: {
         default: "arcade",
         arcade: {
             gravity: {
-                y: 1000,
+                y: 300,
             },
             debug: true,
         },
