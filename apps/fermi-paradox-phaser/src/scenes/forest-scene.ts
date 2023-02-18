@@ -1,5 +1,6 @@
 import Phaser from "phaser"
-
+import { Client, Room } from "colyseus.js"
+import { BACKEND_URL } from "../backend"
 /**
  * FirstGameScene is an example Phaser Scene
  * @class
@@ -10,6 +11,11 @@ import Phaser from "phaser"
 type WASD = any
 
 export class ForestScene extends Phaser.Scene {
+    room: Room
+    playerEntities: {
+        [sessionId: string]: Phaser.Types.Physics.Arcade.ImageWithDynamicBody
+    } = {}
+
     private player!: Phaser.Physics.Arcade.Sprite
     private cursors!: Phaser.Types.Input.Keyboard.CursorKeys
     private wasd!: WASD
@@ -20,7 +26,12 @@ export class ForestScene extends Phaser.Scene {
         sprite: Phaser.GameObjects.TileSprite
     }[] = []
 
-    private velocityX = 10
+    inputPayload = {
+        left: false,
+        right: false,
+        up: false,
+        down: false,
+    }
 
     init() {
         this.cursors = this.input.keyboard.createCursorKeys()
@@ -65,8 +76,29 @@ export class ForestScene extends Phaser.Scene {
         )
     }
 
-    create() {
+    async create() {
         console.log("FirstGameScene.create")
+
+        await this.connect()
+
+        this.room.state.players.onAdd((player, sessionId) => {
+            const entity = this.physics.add.image(
+                player.x,
+                player.y,
+                "ship_0001"
+            )
+            this.playerEntities[sessionId] = entity
+
+            // listening for server updates
+            player.onChange(() => {
+                //
+                // update local position immediately
+                // (WE WILL CHANGE THIS ON PART 2)
+                //
+                entity.x = player.x
+                entity.y = player.y
+            })
+        })
 
         const { width } = this.scale
 
@@ -189,8 +221,24 @@ export class ForestScene extends Phaser.Scene {
         })
     }
 
+    async connect() {
+        // add connection status text
+
+        const client = new Client("ws://localhost:2567")
+
+        try {
+            this.room = await client.joinOrCreate("part1_room", {})
+
+            // connection successful!
+        } catch (e) {
+            // couldn't connect
+        }
+    }
+
     update() {
-        console.log(this.player.body.touching.down)
+        if (!this.room) {
+            return
+        }
         // Up, down, left, right
         const goingRight = this.wasd.right.isDown || this.cursors.right.isDown
         const goingLeft = this.wasd.left.isDown || this.cursors.left.isDown
