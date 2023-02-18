@@ -16,6 +16,13 @@ export class ForestScene extends Phaser.Scene {
         [sessionId: string]: Phaser.Types.Physics.Arcade.ImageWithDynamicBody
     } = {}
 
+    currentPlayer: Phaser.Types.Physics.Arcade.ImageWithDynamicBody
+    remoteRef: Phaser.GameObjects.Rectangle
+
+    localRef: Phaser.GameObjects.Rectangle
+
+    cursorKeys: Phaser.Types.Input.Keyboard.CursorKeys
+
     private player!: Phaser.Physics.Arcade.Sprite
     private cursors!: Phaser.Types.Input.Keyboard.CursorKeys
     private wasd!: WASD
@@ -31,7 +38,13 @@ export class ForestScene extends Phaser.Scene {
         right: false,
         up: false,
         down: false,
+        tick: undefined,
     }
+
+    elapsedTime = 0
+    fixedTimeStep = 1000 / 60
+
+    currentTick: number = 0
 
     init() {
         this.cursors = this.input.keyboard.createCursorKeys()
@@ -79,26 +92,9 @@ export class ForestScene extends Phaser.Scene {
     async create() {
         console.log("FirstGameScene.create")
 
+        this.cursorKeys = this.input.keyboard.createCursorKeys()
+
         await this.connect()
-
-        this.room.state.players.onAdd((player, sessionId) => {
-            const entity = this.physics.add.image(
-                player.x,
-                player.y,
-                "ship_0001"
-            )
-            this.playerEntities[sessionId] = entity
-
-            // listening for server updates
-            player.onChange(() => {
-                //
-                // update local position immediately
-                // (WE WILL CHANGE THIS ON PART 2)
-                //
-                entity.x = player.x
-                entity.y = player.y
-            })
-        })
 
         const { width } = this.scale
 
@@ -177,16 +173,62 @@ export class ForestScene extends Phaser.Scene {
             faceColor: new Phaser.Display.Color(40, 39, 37, 255), // Color of colliding face edges
         })
 
-        this.player = this.physics.add
-            .sprite(300, 380, "player")
-            .setOrigin(0, 0)
-        // this.physics.add.collider(this.player, underground)
-        this.physics.add.collider(this.player, grass)
-        this.player.body.setSize(16, 30)
-        this.player.body.setOffset(16, 20)
-        this.player.setScale(2)
+        this.room.state.players.onAdd((player, sessionId) => {
+            const entity = this.physics.add
+                .sprite(player.x, player.y, "player")
+                .setOrigin(0, 0)
+                .setSize(16, 30)
+                .setOffset(16, 20)
+                .setScale(2)
+                .setGravityY(100)
+            this.physics.add.collider(entity, grass)
+            this.playerEntities[sessionId] = entity
 
-        this.cameras.main.startFollow(this.player, true, 1, 1)
+            // is current player
+            if (sessionId === this.room.sessionId) {
+                this.currentPlayer = entity
+                this.cameras.main.startFollow(entity, true, 1, 1)
+
+                this.localRef = this.add.rectangle(
+                    0,
+                    0,
+                    entity.width,
+                    entity.height
+                )
+                this.localRef.setStrokeStyle(1, 0x00ff00)
+
+                this.remoteRef = this.add.rectangle(
+                    0,
+                    0,
+                    entity.width,
+                    entity.height
+                )
+                this.remoteRef.setStrokeStyle(1, 0xff0000)
+
+                player.onChange(() => {
+                    this.remoteRef.x = player.x
+                    this.remoteRef.y = player.y
+                })
+            } else {
+                // listening for server updates
+                player.onChange(() => {
+                    //
+                    // we're going to LERP the positions during the render loop.
+                    //
+                    entity.setData("serverX", player.x)
+                    entity.setData("serverY", player.y)
+                })
+            }
+        })
+
+        // remove local reference when entity is removed from the server
+        this.room.state.players.onRemove((player, sessionId) => {
+            const entity = this.playerEntities[sessionId]
+            if (entity) {
+                entity.destroy()
+                delete this.playerEntities[sessionId]
+            }
+        })
 
         this.anims.create({
             key: "right",
@@ -235,55 +277,63 @@ export class ForestScene extends Phaser.Scene {
         }
     }
 
-    update() {
-        if (!this.room) {
+    update(time: number, delta: number): void {
+        // skip loop if not connected yet.
+        if (!this.currentPlayer) {
             return
         }
-        // Up, down, left, right
-        const goingRight = this.wasd.right.isDown || this.cursors.right.isDown
-        const goingLeft = this.wasd.left.isDown || this.cursors.left.isDown
 
-        // Combination directions
-
-        if (goingRight) {
-            this.player.flipX = false
-            this.player.setVelocityX(160)
-            this.player.anims.play("right", true)
-        } else if (goingLeft) {
-            this.player.flipX = true
-            this.player.setVelocityX(-160)
-            this.player.anims.play("left", true)
-        } else {
-            this.player.setVelocityX(0)
-            this.player.anims.play("idle", true)
+        this.elapsedTime += delta
+        while (this.elapsedTime >= this.fixedTimeStep) {
+            this.elapsedTime -= this.fixedTimeStep
+            this.fixedTick(time, this.fixedTimeStep)
         }
 
-        if (this.spacebar.isDown) {
-            this.player.setVelocityY(-160)
-        }
-
-        // if (this.cursors.left.isDown) {
-        //     this.player.setVelocityX(-160)
-
-        //     this.player.anims.play("left", true)
-        // } else if (this.cursors.right.isDown) {
-        //     this.player.setVelocityX(160)
-
-        //     this.player.anims.play("right", true)
-        // } else {
-        //     this.player.setVelocityX(0)
-
-        //     this.player.anims.play("turn")
-        // }
-
-        // if (this.cursors.up.isDown && this.player.body.touching.down) {
-        //     this.player.setVelocityY(-330)
-        // }
         for (let i = 0; i < this.backgrounds.length; ++i) {
             const bg = this.backgrounds[i]
 
             bg.sprite.tilePositionX = this.cameras.main.scrollX * bg.ratioX
             bg.sprite.setPosition(0, -this.cameras.main.scrollY + 160)
+        }
+    }
+
+    fixedTick(time, delta) {
+        this.currentTick++
+
+        const velocity = 2
+        this.inputPayload.left = this.cursors.left.isDown
+        this.inputPayload.right = this.cursors.right.isDown
+
+        this.inputPayload.tick = this.currentTick
+        this.room.send(0, this.inputPayload)
+
+        if (this.inputPayload.left) {
+            this.currentPlayer.x -= velocity
+        } else if (this.inputPayload.right) {
+            this.currentPlayer.x += velocity
+        }
+
+        if (this.inputPayload.up) {
+            this.currentPlayer.y -= velocity
+        } else if (this.inputPayload.down) {
+            this.currentPlayer.y += velocity
+        }
+
+        this.localRef.x = this.currentPlayer.x
+        this.localRef.y = this.currentPlayer.y
+
+        for (let sessionId in this.playerEntities) {
+            // interpolate all player entities
+            // (except the current player)
+            if (sessionId === this.room.sessionId) {
+                continue
+            }
+
+            const entity = this.playerEntities[sessionId]
+            const { serverX, serverY } = entity.data.values
+
+            entity.x = Phaser.Math.Linear(entity.x, serverX, 0.2)
+            entity.y = Phaser.Math.Linear(entity.y, serverY, 0.2)
         }
     }
 }

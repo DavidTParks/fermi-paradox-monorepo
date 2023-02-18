@@ -1,7 +1,9 @@
 import { Room, Client } from "colyseus"
-import { Part1State, Player } from "./Part1State"
+import { Part1State, Player, InputData } from "./Part1State"
 
 export class Part1Room extends Room<Part1State> {
+    fixedTimeStep = 1000 / 60
+
     onCreate(options: any) {
         this.setState(new Part1State())
 
@@ -9,21 +11,46 @@ export class Part1Room extends Room<Part1State> {
         this.state.mapWidth = 800
         this.state.mapHeight = 600
 
-        // handle player input
         this.onMessage(0, (client, input) => {
+            // handle player input
             const player = this.state.players.get(client.sessionId)
-            const velocity = 2
 
-            if (input.left) {
-                player.x -= velocity
-            } else if (input.right) {
-                player.x += velocity
+            // enqueue input to user input buffer.
+            player.inputQueue.push(input)
+        })
+
+        let elapsedTime = 0
+        this.setSimulationInterval((deltaTime) => {
+            elapsedTime += deltaTime
+
+            while (elapsedTime >= this.fixedTimeStep) {
+                elapsedTime -= this.fixedTimeStep
+                this.fixedTick(this.fixedTimeStep)
             }
+        })
+    }
 
-            if (input.up) {
-                player.y -= velocity
-            } else if (input.down) {
-                player.y += velocity
+    fixedTick(timeStep: number) {
+        const velocity = 2
+
+        this.state.players.forEach((player) => {
+            let input: InputData
+
+            // dequeue player inputs
+            while ((input = player.inputQueue.shift())) {
+                if (input.left) {
+                    player.x -= velocity
+                } else if (input.right) {
+                    player.x += velocity
+                }
+
+                if (input.up) {
+                    player.y -= velocity
+                } else if (input.down) {
+                    player.y += velocity
+                }
+
+                player.tick = input.tick
             }
         })
     }
@@ -33,8 +60,8 @@ export class Part1Room extends Room<Part1State> {
 
         // create player at random position.
         const player = new Player()
-        player.x = Math.random() * this.state.mapWidth
-        player.y = Math.random() * this.state.mapHeight
+        player.x = 300
+        player.y = 300
 
         this.state.players.set(client.sessionId, player)
     }
@@ -46,5 +73,28 @@ export class Part1Room extends Room<Part1State> {
 
     onDispose() {
         console.log("room", this.roomId, "disposing...")
+    }
+
+    update(deltaTime: number) {
+        const velocity = 2
+
+        this.state.players.forEach((player) => {
+            let input: any
+
+            // dequeue player inputs
+            while ((input = player.inputQueue.shift())) {
+                if (input.left) {
+                    player.x -= velocity
+                } else if (input.right) {
+                    player.x += velocity
+                }
+
+                if (input.up) {
+                    player.y -= velocity
+                } else if (input.down) {
+                    player.y += velocity
+                }
+            }
+        })
     }
 }

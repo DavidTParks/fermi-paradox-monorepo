@@ -7,6 +7,11 @@ export const config: Phaser.Types.Core.GameConfig = {
     pixelArt: true,
     roundPixels: true,
     scene: [ForestScene],
+    fps: {
+        target: 60,
+        forceSetTimeOut: true,
+        smoothStep: false,
+    },
     scale: {
         mode: Phaser.Scale.ScaleModes.RESIZE,
         autoCenter: Phaser.Scale.CENTER_BOTH,
@@ -14,10 +19,10 @@ export const config: Phaser.Types.Core.GameConfig = {
     physics: {
         default: "arcade",
         arcade: {
-            gravity: {
-                y: 400,
-            },
             debug: true,
+            gravity: {
+                y: 100,
+            },
         },
     },
     backgroundColor: "#bddfda",
