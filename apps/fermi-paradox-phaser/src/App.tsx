@@ -28,11 +28,7 @@ function App() {
         }
     }, [])
 
-    return (
-        <div className="h-screen w-screen">
-            <div id="game-content" />
-        </div>
-    )
+    return <div id="game-content" />
 }
 
 export default App
