@@ -48,7 +48,7 @@ export class ForestScene extends Phaser.Scene {
         this.load.image("tiles", "assets/tiles/ancient-caves/green-1.png")
         this.load.tilemapTiledJSON(
             "tilemap",
-            "assets/maps/fermi-paradox-level-1/level-1.json"
+            "assets/maps/fermi-paradox-level-1/level-2.json"
         )
 
         this.load.spritesheet("player", "assets/gunslinger.png", {
@@ -121,15 +121,12 @@ export class ForestScene extends Phaser.Scene {
         const tileset = map.addTilesetImage("green-1", "tiles")
 
         // create the layers we want in the right order
-        const underground = map.createLayer("underground", tileset)
-
+        const underground = map.createLayer("ground", tileset)
         underground.setScale(2)
-
-        // "Ground" layer will be on top of "Background" layer
-        const tree = map.createLayer("tree", tileset)
+        const accents = map.createLayer("accents", tileset)
+        accents.setScale(2)
         const grass = map.createLayer("grass", tileset)
-        tree.setScale(2)
-        grass.setScale(2)
+        grass.setScale(2).setDepth(3)
 
         map.setCollisionByProperty({ collides: true })
 
@@ -141,7 +138,7 @@ export class ForestScene extends Phaser.Scene {
         // })
 
         this.player = this.physics.add
-            .sprite(300, 445, "player")
+            .sprite(300, 380, "player")
             .setOrigin(0, 0)
         this.physics.add.collider(this.player, underground)
         this.physics.add.collider(this.player, grass)
