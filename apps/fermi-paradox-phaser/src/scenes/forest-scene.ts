@@ -13,10 +13,10 @@ type WASD = any
 export class ForestScene extends Phaser.Scene {
     room: Room
     playerEntities: {
-        [sessionId: string]: Phaser.Types.Physics.Arcade.ImageWithDynamicBody
+        [sessionId: string]: Phaser.Physics.Arcade.Sprite
     } = {}
 
-    currentPlayer: Phaser.Types.Physics.Arcade.ImageWithDynamicBody
+    currentPlayer: Phaser.Physics.Arcade.Sprite
     remoteRef: Phaser.GameObjects.Rectangle
 
     localRef: Phaser.GameObjects.Rectangle
@@ -180,14 +180,13 @@ export class ForestScene extends Phaser.Scene {
                 .setSize(16, 30)
                 .setOffset(16, 20)
                 .setScale(2)
-                .setGravityY(100)
             this.physics.add.collider(entity, grass)
             this.playerEntities[sessionId] = entity
 
             // is current player
             if (sessionId === this.room.sessionId) {
                 this.currentPlayer = entity
-                this.cameras.main.startFollow(entity, true, 1, 1)
+                this.cameras.main.startFollow(entity, true)
 
                 this.localRef = this.add.rectangle(
                     0,
@@ -309,8 +308,12 @@ export class ForestScene extends Phaser.Scene {
 
         if (this.inputPayload.left) {
             this.currentPlayer.x -= velocity
+            this.currentPlayer.flipX = true
+            this.currentPlayer.anims.play("left", true)
         } else if (this.inputPayload.right) {
             this.currentPlayer.x += velocity
+            this.currentPlayer.flipX = false
+            this.currentPlayer.anims.play("right", true)
         }
 
         if (this.inputPayload.up) {
@@ -332,6 +335,13 @@ export class ForestScene extends Phaser.Scene {
             const entity = this.playerEntities[sessionId]
             const { serverX, serverY } = entity.data.values
 
+            if (serverX > entity.x) {
+                entity.flipX = false
+                entity.anims.play("right", true)
+            } else if (serverX < entity.x) {
+                entity.flipX = true
+                entity.anims.play("left", true)
+            }
             entity.x = Phaser.Math.Linear(entity.x, serverX, 0.2)
             entity.y = Phaser.Math.Linear(entity.y, serverY, 0.2)
         }
