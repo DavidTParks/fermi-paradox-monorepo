@@ -187,6 +187,7 @@ export class ForestScene extends Phaser.Scene {
             if (sessionId === this.room.sessionId) {
                 this.currentPlayer = entity
                 this.cameras.main.startFollow(entity, true)
+                this.currentPlayer.setGravityY(500)
 
                 this.localRef = this.add.rectangle(
                     0,

@@ -33,6 +33,7 @@
     "dependencies": {
         "@colyseus/arena": "^0.15.0-preview.1",
         "@colyseus/monitor": "^0.15.0-preview.1",
+        "arcade-physics": "^0.1.0",
         "colyseus": "^0.15.0-preview.4",
         "cors": "^2.8.5",
         "express": "^4.16.4"
