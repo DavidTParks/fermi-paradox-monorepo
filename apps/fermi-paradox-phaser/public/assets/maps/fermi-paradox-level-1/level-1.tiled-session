@@ -7,6 +7,10 @@
     "expandedProjectPaths": [
     ],
     "fileStates": {
+        "": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
+        },
         "#City Tileset": {
             "scaleInDock": 1
         },
@@ -36,9 +40,32 @@
         },
         "/Users/davidparks/Downloads/The DARK Series - City Tileset/Tiled Files/Dark Test.tmx#Dark City Test": {
             "scaleInDock": 1
+        },
+        "forest-01.tmx": {
+            "scale": 1,
+            "selectedLayer": 0,
+            "viewCenter": {
+                "x": 240.5,
+                "y": 284
+            }
+        },
+        "forest-01.tmx#green-1": {
+            "scaleInDock": 1
+        },
+        "level-2.tmx": {
+            "scale": 1,
+            "selectedLayer": 2,
+            "viewCenter": {
+                "x": 358.5,
+                "y": 163
+            }
+        },
+        "level-2.tmx#green-1": {
+            "scaleInDock": 1,
+            "scaleInEditor": 1
         }
     },
-    "last.exportedFilePath": "/Users/davidparks/Documents/Game Dev/fermi-paradox-monorepo/apps/fermi-paradox-phaser/public/assets/maps/fermi-paradox-level-1",
+    "last.exportedFilePath": "/Users/davidparks/Documents/Game Dev/fermi-paradox-monorepo/packages/shared/maps/fermi-paradox-level-1",
     "last.imagePath": "/Users/davidparks/Documents/Game Dev/fermi-paradox-monorepo/apps/fermi-paradox-phaser/public/assets/tiles/ancient-caves",
     "map.height": 30,
     "map.lastUsedExportFilter": "JSON map files (*.tmj *.json)",
@@ -51,6 +78,8 @@
     "project": "level-1.tiled-project",
     "property.type": "bool",
     "recentFiles": [
+        "level-2.tmx",
+        "forest-01.tmx",
         "/Users/davidparks/Documents/Game Dev/fermi-paradox-monorepo/apps/fermi-paradox-phaser/public/assets/The DARK Series - City Tileset/Tiled Files/Dark Test.tmx",
         "/Users/davidparks/Downloads/The DARK Series - City Tileset/Tiled Files/Dark Test.tmx"
     ],

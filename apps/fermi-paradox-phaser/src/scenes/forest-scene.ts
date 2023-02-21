@@ -1,6 +1,7 @@
 import Phaser from "phaser"
 import { Client, Room } from "colyseus.js"
 import { BACKEND_URL } from "../backend"
+import { Level2, Platform, parseTiled } from "shared"
 /**
  * FirstGameScene is an example Phaser Scene
  * @class
@@ -74,10 +75,7 @@ export class ForestScene extends Phaser.Scene {
         this.load.image("bg4", "assets/background/forest/bg4.png")
 
         this.load.image("tiles", "assets/tiles/ancient-caves/green-1.png")
-        this.load.tilemapTiledJSON(
-            "tilemap",
-            "assets/maps/fermi-paradox-level-1/level-2.json"
-        )
+        this.load.tilemapTiledJSON("tilemap", Level2)
 
         this.load.spritesheet(
             "player",
@@ -142,8 +140,6 @@ export class ForestScene extends Phaser.Scene {
                 .setPosition(0, 200),
         })
 
-        this.physics.world.fixedStep = false
-
         this.backgrounds.push({
             ratioX: 0.8,
             sprite: this.add
@@ -158,11 +154,9 @@ export class ForestScene extends Phaser.Scene {
 
         // create the layers we want in the right order
         const underground = map.createLayer("ground", tileset)
-        underground.setScale(2)
+
         const accents = map.createLayer("accents", tileset)
-        accents.setScale(2)
         const grass = map.createLayer("grass", tileset)
-        grass.setScale(2)
 
         map.setCollisionByProperty({ collides: true })
 
@@ -174,12 +168,8 @@ export class ForestScene extends Phaser.Scene {
         })
 
         this.room.state.players.onAdd((player, sessionId) => {
-            const entity = this.physics.add
-                .sprite(player.x, player.y, "player")
-                .setOrigin(0, 0)
-                .setSize(16, 30)
-                .setOffset(16, 20)
-                .setScale(2)
+            const entity = this.physics.add.sprite(player.x, player.y, "player")
+            this.physics.add.collider(entity, underground)
             this.physics.add.collider(entity, grass)
             this.playerEntities[sessionId] = entity
 
@@ -187,19 +177,18 @@ export class ForestScene extends Phaser.Scene {
             if (sessionId === this.room.sessionId) {
                 this.currentPlayer = entity
                 this.cameras.main.startFollow(entity, true)
-                this.currentPlayer.setGravityY(500)
 
                 this.localRef = this.add.rectangle(
-                    0,
-                    0,
+                    player.x,
+                    player.y,
                     entity.width,
                     entity.height
                 )
                 this.localRef.setStrokeStyle(1, 0x00ff00)
 
                 this.remoteRef = this.add.rectangle(
-                    0,
-                    0,
+                    player.x,
+                    player.y,
                     entity.width,
                     entity.height
                 )
@@ -303,25 +292,31 @@ export class ForestScene extends Phaser.Scene {
         const velocity = 2
         this.inputPayload.left = this.cursors.left.isDown
         this.inputPayload.right = this.cursors.right.isDown
+        this.inputPayload.down = this.cursors.down.isDown
 
         this.inputPayload.tick = this.currentTick
         this.room.send(0, this.inputPayload)
 
         if (this.inputPayload.left) {
-            this.currentPlayer.x -= velocity
+            this.currentPlayer.setVelocityX(-160)
+            // this.currentPlayer.x -= velocity
             this.currentPlayer.flipX = true
             this.currentPlayer.anims.play("left", true)
         } else if (this.inputPayload.right) {
-            this.currentPlayer.x += velocity
+            this.currentPlayer.setVelocityX(160)
             this.currentPlayer.flipX = false
             this.currentPlayer.anims.play("right", true)
+        } else if (this.inputPayload.down) {
+            this.currentPlayer.setVelocityY(160)
+        } else {
+            this.currentPlayer.setVelocityX(0)
         }
 
-        if (this.inputPayload.up) {
-            this.currentPlayer.y -= velocity
-        } else if (this.inputPayload.down) {
-            this.currentPlayer.y += velocity
-        }
+        // if (this.inputPayload.up) {
+        //     this.currentPlayer.y -= velocity
+        // } else if (this.inputPayload.down) {
+        //     this.currentPlayer.y += velocity
+        // }
 
         this.localRef.x = this.currentPlayer.x
         this.localRef.y = this.currentPlayer.y

@@ -20,6 +20,10 @@ export const config: Phaser.Types.Core.GameConfig = {
         default: "arcade",
         arcade: {
             debug: true,
+            gravity: {
+                y: 0,
+                x: 0,
+            },
         },
     },
     backgroundColor: "#bddfda",
