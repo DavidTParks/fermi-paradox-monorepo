@@ -11,21 +11,12 @@ export class Part1Room extends Room<Part1State> {
     tick: number = 0
 
     onCreate(options: any) {
+        console.log("room", this.roomId, "creating...")
         this.setState(new Part1State())
 
         // set map dimensions
         this.state.mapWidth = 850
         this.state.mapHeight = 865
-
-        this.onMessage(0, (client, input) => {
-            // handle player input
-            const player = this.state.players.get(client.sessionId)
-
-            // enqueue input to user input buffer.
-            player.inputQueue.push(input)
-        })
-
-        let elapsedTime = 0
 
         this.physics = new ArcadePhysics({
             gravity: {
@@ -43,9 +34,18 @@ export class Part1Room extends Room<Part1State> {
                 .body(platform.x, platform.y, platform.width, platform.height)
                 .setAllowGravity(false)
                 .setImmovable(true)
-            console.log(staticPlatform.center)
             return staticPlatform
         })
+
+        this.onMessage(0, (client, input) => {
+            // handle player input
+            const player = this.state.players.get(client.sessionId)
+
+            // enqueue input to user input buffer.
+            player.inputQueue.push(input)
+        })
+
+        let elapsedTime = 0
 
         this.setSimulationInterval((deltaTime) => {
             elapsedTime += deltaTime
@@ -99,13 +99,6 @@ export class Part1Room extends Room<Part1State> {
         const playerBody = this.physics.add.body(24, 24, 48, 48)
         playerBody.setCollideWorldBounds(true, undefined, undefined, undefined)
 
-        // const testPlatform = this.physics.add
-        //     .body(0, 56, 16, 30)
-        //     .setAllowGravity(false)
-        //     .setImmovable(true)
-
-        // this.physics.add.collider(playerBody, testPlatform)
-
         this.platforms.forEach((platformBody) =>
             this.physics.add.collider(playerBody, platformBody)
         )
@@ -113,7 +106,6 @@ export class Part1Room extends Room<Part1State> {
     }
 
     onLeave(client: Client, consented: boolean) {
-        console.log(client.sessionId, "left!")
         this.state.players.delete(client.sessionId)
         this.bodies[client.sessionId].destroy()
         delete this.bodies[client.sessionId]
