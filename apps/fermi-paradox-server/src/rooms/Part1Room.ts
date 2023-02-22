@@ -8,6 +8,7 @@ export class Part1Room extends Room<Part1State> {
     physics: ArcadePhysics = null
     bodies: Record<string, Body> = {}
     platforms: Body[]
+    tick: number = 0
 
     onCreate(options: any) {
         this.setState(new Part1State())
@@ -35,6 +36,17 @@ export class Part1Room extends Room<Part1State> {
             width: 850,
         })
 
+        const platforms = parseTiled(Level2)
+
+        this.platforms = platforms.map((platform) => {
+            const staticPlatform = this.physics.add
+                .body(platform.x, platform.y, platform.width, platform.height)
+                .setAllowGravity(false)
+                .setImmovable(true)
+            console.log(staticPlatform.center)
+            return staticPlatform
+        })
+
         this.setSimulationInterval((deltaTime) => {
             elapsedTime += deltaTime
 
@@ -43,23 +55,13 @@ export class Part1Room extends Room<Part1State> {
                 this.fixedTick(this.fixedTimeStep)
             }
         })
-
-        const platforms = parseTiled(Level2)
-
-        console.log(platforms)
-
-        this.platforms = platforms.map((platform) => {
-            return this.physics.add
-                .body(platform.x, platform.y, platform.width, platform.height)
-                .setAllowGravity(false)
-                .setImmovable(true)
-        })
     }
 
     fixedTick(timeStep: number) {
         const velocity = 2
 
-        this.physics.world.update(this.fixedTimeStep * 1000, this.fixedTimeStep)
+        this.physics.world.update(this.tick * 1000, 1000 / 60)
+        this.tick++
 
         this.state.players.forEach((player, sessionId) => {
             let input: InputData
@@ -79,6 +81,8 @@ export class Part1Room extends Room<Part1State> {
                 }
 
                 player.tick = input.tick
+                player.x = body.x
+                player.y = body.y
             }
         })
     }
@@ -92,16 +96,15 @@ export class Part1Room extends Room<Part1State> {
         player.y = 0
 
         this.state.players.set(client.sessionId, player)
-        const playerBody = this.physics.add.body(0, 0, 48, 48)
+        const playerBody = this.physics.add.body(24, 24, 48, 48)
         playerBody.setCollideWorldBounds(true, undefined, undefined, undefined)
-        playerBody.pushable = false
 
-        const testPlatform = this.physics.add
-            .body(0, 56, 16, 30)
-            .setAllowGravity(false)
-            .setImmovable(true)
+        // const testPlatform = this.physics.add
+        //     .body(0, 56, 16, 30)
+        //     .setAllowGravity(false)
+        //     .setImmovable(true)
 
-        this.physics.add.collider(playerBody, testPlatform)
+        // this.physics.add.collider(playerBody, testPlatform)
 
         this.platforms.forEach((platformBody) =>
             this.physics.add.collider(playerBody, platformBody)
@@ -112,6 +115,8 @@ export class Part1Room extends Room<Part1State> {
     onLeave(client: Client, consented: boolean) {
         console.log(client.sessionId, "left!")
         this.state.players.delete(client.sessionId)
+        this.bodies[client.sessionId].destroy()
+        delete this.bodies[client.sessionId]
     }
 
     onDispose() {

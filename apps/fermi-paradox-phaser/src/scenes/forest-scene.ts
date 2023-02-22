@@ -152,11 +152,9 @@ export class ForestScene extends Phaser.Scene {
         // add the tileset image we are using
         const tileset = map.addTilesetImage("green-1", "tiles")
 
+        const accents = map.createLayer("accents", tileset)
         // create the layers we want in the right order
         const underground = map.createLayer("ground", tileset)
-
-        const accents = map.createLayer("accents", tileset)
-        const grass = map.createLayer("grass", tileset)
 
         map.setCollisionByProperty({ collides: true })
 
@@ -169,13 +167,18 @@ export class ForestScene extends Phaser.Scene {
 
         this.room.state.players.onAdd((player, sessionId) => {
             const entity = this.physics.add.sprite(player.x, player.y, "player")
+
+            entity.setCollideWorldBounds(true, undefined, undefined)
+
             this.physics.add.collider(entity, underground)
-            this.physics.add.collider(entity, grass)
             this.playerEntities[sessionId] = entity
+
+            console.log(entity)
 
             // is current player
             if (sessionId === this.room.sessionId) {
                 this.currentPlayer = entity
+                this.currentPlayer.setGravityY(500)
                 this.cameras.main.startFollow(entity, true)
 
                 this.localRef = this.add.rectangle(

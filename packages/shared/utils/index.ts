@@ -55,8 +55,8 @@ export const parseTiled = (data: ITiled) => {
 
                     if (tileCollisionIds.includes(tile)) {
                         platforms.push({
-                            x: x * tileWidth,
-                            y: y * tileHeight,
+                            x: x * tileWidth + 24,
+                            y: y * tileHeight + 24,
                             width: 16,
                             height: 16,
                         })
