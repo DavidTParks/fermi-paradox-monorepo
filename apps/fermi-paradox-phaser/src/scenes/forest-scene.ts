@@ -150,9 +150,9 @@ export class ForestScene extends Phaser.Scene {
         // add the tileset image we are using
         const tileset = map.addTilesetImage("green-1", "tiles")
 
-        const accents = map.createLayer("accents", tileset)
+        const accents = map.createLayer("accents", tileset).setScale(2)
         // create the layers we want in the right order
-        const underground = map.createLayer("ground", tileset)
+        const underground = map.createLayer("ground", tileset).setScale(2)
 
         map.setCollisionByProperty({ collides: true })
 
@@ -164,7 +164,9 @@ export class ForestScene extends Phaser.Scene {
         })
 
         this.room.state.players.onAdd((player, sessionId) => {
-            const entity = this.physics.add.sprite(player.x, player.y, "player")
+            const entity = this.physics.add
+                .sprite(player.x, player.y, "player")
+                .setScale(2)
 
             this.playerEntities[sessionId] = entity
 
@@ -186,16 +188,16 @@ export class ForestScene extends Phaser.Scene {
                 this.localRef = this.add.rectangle(
                     player.x,
                     player.y,
-                    entity.width,
-                    entity.height
+                    entity.displayWidth,
+                    entity.displayHeight
                 )
                 this.localRef.setStrokeStyle(1, 0x00ff00)
 
                 this.remoteRef = this.add.rectangle(
                     player.x,
                     player.y,
-                    entity.width,
-                    entity.height
+                    entity.displayWidth,
+                    entity.displayHeight
                 )
                 this.remoteRef.setStrokeStyle(1, 0xff0000)
 
@@ -263,7 +265,10 @@ export class ForestScene extends Phaser.Scene {
         const client = new Client("ws://localhost:2567")
 
         try {
-            this.room = await client.joinOrCreate("part1_room", {})
+            this.room = await client.joinOrCreate("part1_room", {
+                height: this.scale.height,
+                width: this.scale.width,
+            })
 
             // connection successful!
         } catch (e) {

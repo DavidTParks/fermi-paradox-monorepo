@@ -17,16 +17,16 @@ export class Part1Room extends Room<Part1State> {
         this.setState(new Part1State())
 
         // set map dimensions
-        this.state.mapWidth = 850
-        this.state.mapHeight = 865
+        this.state.mapWidth = options.width
+        this.state.mapHeight = options.height
 
         this.physics = new ArcadePhysics({
             gravity: {
                 y: 500,
                 x: 0,
             },
-            height: 865,
-            width: 850,
+            height: options.height,
+            width: options.width,
         })
 
         this.platforms = platforms.map((platform) => {
@@ -100,7 +100,7 @@ export class Part1Room extends Room<Part1State> {
         player.y = 0
 
         this.state.players.set(client.sessionId, player)
-        const playerBody = this.physics.add.body(24, 24, 48, 48)
+        const playerBody = this.physics.add.body(48, 48, 96, 96)
         playerBody.setCollideWorldBounds(true, undefined, undefined, undefined)
 
         this.platforms.forEach((platformBody) =>
