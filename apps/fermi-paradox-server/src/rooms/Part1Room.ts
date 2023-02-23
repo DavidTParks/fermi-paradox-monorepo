@@ -3,6 +3,8 @@ import { Part1State, Player, InputData } from "./Part1State"
 import { ArcadePhysics } from "arcade-physics"
 import { Body } from "arcade-physics/lib/physics/arcade/Body"
 import { Level2, Platform, parseTiled } from "shared"
+
+const platforms = parseTiled(Level2)
 export class Part1Room extends Room<Part1State> {
     fixedTimeStep = 1000 / 60
     physics: ArcadePhysics = null
@@ -26,8 +28,6 @@ export class Part1Room extends Room<Part1State> {
             height: 865,
             width: 850,
         })
-
-        const platforms = parseTiled(Level2)
 
         this.platforms = platforms.map((platform) => {
             const staticPlatform = this.physics.add
@@ -80,6 +80,10 @@ export class Part1Room extends Room<Part1State> {
                     body.setVelocityX(0)
                 }
 
+                if (input.up) {
+                    body.setVelocityY(-250)
+                }
+
                 player.tick = input.tick
                 player.x = body.x
                 player.y = body.y
@@ -102,6 +106,7 @@ export class Part1Room extends Room<Part1State> {
         this.platforms.forEach((platformBody) =>
             this.physics.add.collider(playerBody, platformBody)
         )
+
         this.bodies[client.sessionId] = playerBody
     }
 
@@ -112,6 +117,13 @@ export class Part1Room extends Room<Part1State> {
     }
 
     onDispose() {
+        this.platforms.forEach((platform) => {
+            platform.destroy()
+        })
+        delete this.platforms
+        this.physics.destroy()
+        delete this.physics
+        this.tick = 0
         console.log("room", this.roomId, "disposing...")
     }
 }

@@ -19,16 +19,14 @@ export class ForestScene extends Phaser.Scene {
 
     currentPlayer: Phaser.Physics.Arcade.Sprite
     remoteRef: Phaser.GameObjects.Rectangle
-
     localRef: Phaser.GameObjects.Rectangle
-
     cursorKeys: Phaser.Types.Input.Keyboard.CursorKeys
+    playerColliding: boolean
 
     private player!: Phaser.Physics.Arcade.Sprite
     private cursors!: Phaser.Types.Input.Keyboard.CursorKeys
     private wasd!: WASD
     private spacebar!: Phaser.Input.Keyboard.Key
-
     private backgrounds: {
         ratioX: number
         sprite: Phaser.GameObjects.TileSprite
@@ -168,17 +166,21 @@ export class ForestScene extends Phaser.Scene {
         this.room.state.players.onAdd((player, sessionId) => {
             const entity = this.physics.add.sprite(player.x, player.y, "player")
 
-            entity.setCollideWorldBounds(true, undefined, undefined)
-
-            this.physics.add.collider(entity, underground)
             this.playerEntities[sessionId] = entity
-
-            console.log(entity)
 
             // is current player
             if (sessionId === this.room.sessionId) {
                 this.currentPlayer = entity
-                this.currentPlayer.setGravityY(500)
+                this.currentPlayer
+                    .setCollideWorldBounds(true, undefined, undefined)
+                    .setGravityY(500)
+
+                this.physics.add.collider(
+                    this.currentPlayer,
+                    underground,
+                    () => (this.playerColliding = true)
+                )
+
                 this.cameras.main.startFollow(entity, true)
 
                 this.localRef = this.add.rectangle(
@@ -290,12 +292,16 @@ export class ForestScene extends Phaser.Scene {
     }
 
     fixedTick(time, delta) {
+        console.log(this.playerColliding)
         this.currentTick++
 
         const velocity = 2
-        this.inputPayload.left = this.cursors.left.isDown
-        this.inputPayload.right = this.cursors.right.isDown
-        this.inputPayload.down = this.cursors.down.isDown
+        this.inputPayload.left =
+            this.cursors.left.isDown || this.wasd.left.isDown
+        this.inputPayload.right =
+            this.cursors.right.isDown || this.wasd.right.isDown
+
+        this.inputPayload.up = this.spacebar.isDown && this.playerColliding
 
         this.inputPayload.tick = this.currentTick
         this.room.send(0, this.inputPayload)
@@ -309,10 +315,13 @@ export class ForestScene extends Phaser.Scene {
             this.currentPlayer.setVelocityX(160)
             this.currentPlayer.flipX = false
             this.currentPlayer.anims.play("right", true)
-        } else if (this.inputPayload.down) {
-            this.currentPlayer.setVelocityY(160)
         } else {
             this.currentPlayer.setVelocityX(0)
+        }
+
+        if (this.inputPayload.up) {
+            this.currentPlayer.setVelocityY(-250)
+            this.playerColliding = false
         }
 
         // if (this.inputPayload.up) {

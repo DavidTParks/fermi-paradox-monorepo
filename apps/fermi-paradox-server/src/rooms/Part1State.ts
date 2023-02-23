@@ -6,7 +6,6 @@ export class Player extends Schema {
 
     inputQueue: InputData[] = []
 }
-
 export class Part1State extends Schema {
     @type("number") mapWidth: number
     @type("number") mapHeight: number
